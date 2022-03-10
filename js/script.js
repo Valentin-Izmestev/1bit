@@ -49,7 +49,7 @@ formAuth.addEventListener('submit', (e) => {
                 if (responseObj.error.passwordError === 'Y') {
                     if (!inputPassword.classList.contains('error')) {
                         inputPassword.classList.add('error');
-                        inputPassword.value = '1';
+                        inputPassword.value = '';
                         inputPassword.placeholder = responseObj.error.passwordErrorMessage;
                     }
                 }else{

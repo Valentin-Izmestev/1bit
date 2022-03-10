@@ -51,9 +51,7 @@ $hellowUser = '';
         }
 
         $json = json_encode($arAnswer);
-        echo $json;
-
-        die();
+        
              
     }else{
         $arAnswer['error']['errorStatus'] = false;
@@ -63,10 +61,8 @@ $hellowUser = '';
         // $passwordError = '';
         // $passwordErrorMessage = '';  
         $arAnswer["userData"] = "Приветствую, $userName";  
-        $json = json_encode($arAnswer);
-        echo $json;
-        die();
+        $json = json_encode($arAnswer); 
     } 
-
+    echo $json; 
 
 ?> 
