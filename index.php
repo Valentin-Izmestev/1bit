@@ -1,5 +1,3 @@
- 
-<?include './backend.php';?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -13,26 +11,27 @@
 
 <body>
     <div class="wrapper">
-        <?if($hellowUser):?>
-            <div class="hellow">
-                 <?=$hellowUser;?>
-            </div>
-        <?else:?>
-            <form action="" method="POST" class="form-auth" class="form">
-            <h1>Форма авторизации</h1> 
+        
+        <form action="" method="POST" class="form-auth form">
+            <h1>Форма авторизации</h1>
             <label>
                 <span class="db caption">Логин</span>
-                <input type="text" name="login" class="db inputbox <? if($loginError){echo $loginError;}?>" autocomplete="off" placeholder="<?if($loginErrorMessage){echo $loginErrorMessage;}?>" value="<? echo $login;?>">
+                <input type="text" name="login" class="db inputbox login" autocomplete="off" placeholder="" value="">
             </label>
             <label>
                 <span class="db caption">Пароль</span>
-                <input type="password" name="password" class="db inputbox <? if($passwordError){echo $passwordError;}?>" autocomplete="off" placeholder="<? if($passwordErrorMessage){echo $passwordErrorMessage;}?>" value="<?echo $password;?>">
-            </label>  
-            <input  type="submit" name="submit" value="Авторизоваться">
+                <input type="password" name="password" class="db inputbox password" autocomplete="off" placeholder="" value="">
+            </label>
+            <input type="submit" name="submit" value="Авторизоваться">
         </form>
-        <?endif;?>
-        
+
     </div>
+    <template id="user-box">
+        <div class="hellow">
+            <h1></h1>
+        </div>
+    </template>
 </body>
+<script src="js/script.js"></script>
 
 </html>

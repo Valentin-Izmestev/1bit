@@ -108,3 +108,12 @@ body{
 .inputbox:focus::-moz-placeholder{opacity: 0; transition: opacity 0.3s ease;}
 .inputbox:focus:-moz-placeholder{opacity: 0; transition: opacity 0.3s ease;}
 .inputbox:focus:-ms-input-placeholder{opacity: 0; transition: opacity 0.3s ease;}
+
+.error.inputbox::-webkit-input-placeholder{opacity: 1; transition: opacity 0.3s ease; color:red;}
+.error.inputbox::-moz-placeholder{opacity: 1; transition: opacity 0.3s ease; color:red;}
+.error.inputbox:-moz-placeholder{opacity: 1; transition: opacity 0.3s ease; color:red;}
+.error.inputbox:-ms-input-placeholder{opacity: 1; transition: opacity 0.3s ease; color:red;}
+.error.inputbox:focus::-webkit-input-placeholder{opacity: 0; transition: opacity 0.3s ease;}
+.error.inputbox:focus::-moz-placeholder{opacity: 0; transition: opacity 0.3s ease;}
+.error.inputbox:focus:-moz-placeholder{opacity: 0; transition: opacity 0.3s ease;}
+.error.inputbox:focus:-ms-input-placeholder{opacity: 0; transition: opacity 0.3s ease;}
