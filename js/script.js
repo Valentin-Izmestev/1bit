@@ -27,7 +27,8 @@ formAuth.addEventListener('submit', (e) => {
     request.addEventListener('load', () => {
         if (request.status === 200) {
             responseObj = JSON.parse(request.response);
-            console.log(responseObj);
+            // console.log('получаемые данные ');
+            // console.log(responseObj);
             //если логин или пароль неправильны
             console.log(responseObj.error.errorStatus);
             if (responseObj.error.errorStatus) {
@@ -66,7 +67,7 @@ formAuth.addEventListener('submit', (e) => {
                 let hellowTemlate = userBox.querySelector('.hellow');
                 let hellowbox = hellowTemlate.cloneNode(true);
                 let h1 = hellowbox.querySelector('h1');
-                h1.innerHTML = responseObj.userData;
+                h1.innerHTML = responseObj.name +' '+ responseObj.patronymic +' '+ responseObj.surname;
                 wrapper.append(hellowbox);
                 formAuth.remove();
             }
