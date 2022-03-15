@@ -10,8 +10,7 @@
 </head>
 
 <body>
-    <div class="wrapper">
-        
+    <div class="wrapper"> 
         <form action="" method="POST" class="form-auth form">
             <h1>Форма авторизации</h1>
             <label>
@@ -23,14 +22,13 @@
                 <input type="password" name="password" class="db inputbox password" autocomplete="off" placeholder="" value="">
             </label>
             <input type="submit" name="submit" value="Авторизоваться">
-        </form>
-
+        </form> 
     </div>
-    <template id="user-box">
+    <!-- <template id="user-box">
         <div class="hellow">
             <h1></h1>
         </div>
-    </template>
+    </template> -->
 </body>
 <script src="js/script.js"></script>
 
