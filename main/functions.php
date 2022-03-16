@@ -17,6 +17,21 @@ function isAuth()
 // функция выдает данные авторизованного пользователя
 function getUserInfo()
 {
+    //преобразовываю пол пользоваетля в вид
+    $gender = '';
+    if($_SESSION['gender'] === 'm')
+    {
+        $gender = 'мужской';
+    }
+    else
+    {
+        $gender = 'женский';
+    }
+
+    //преобразую дату в ДД.ММ.ГГГГ
+    $date = date_create($_SESSION['date_of_birth']);
+    $modDate = date_format($date, 'd.m.Y');
+
     return [
         "login" => $_SESSION['login'],
         "name" => $_SESSION['name'],
@@ -24,8 +39,8 @@ function getUserInfo()
         "surname" => $_SESSION['surname'],
         "email" => $_SESSION['email'],
         "tel" => $_SESSION['tel'],
-        "gender" => $_SESSION['gender'],
-        "date_of_birth" => $_SESSION['date_of_birth']
+        "gender" => $gender,
+        "date_of_birth" => $modDate
     ] ;
 }
 

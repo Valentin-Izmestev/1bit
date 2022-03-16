@@ -1,6 +1,12 @@
 <?php 
 session_start();
-
+include_once './main/functions.php';
+//если пользователь авторизован, то перевожу на указанную страницу и прекращаю выполнение скрипта.
+if(isAuth())
+{
+    header('Location: personal.php');
+    die();
+}
 //подключаюсь к БД
 $dbHost = 'localhost';
 $dbUser = 'root';
