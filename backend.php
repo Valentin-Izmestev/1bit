@@ -1,4 +1,5 @@
 <?php 
+session_start();
 
 //подключаюсь к БД
 $dbHost = 'localhost';
@@ -19,7 +20,7 @@ mysqli_query($connection, "SET NAMES 'utf8'");
     
 $_POST = json_decode(file_get_contents("php://input"), true);
  
-//экспортируемый массив
+//экспортируемый массив с информацией о прогрессе авторизации 
 $arAnswer =[
     "error" =>[
         "errorStatus" => true,
@@ -27,20 +28,9 @@ $arAnswer =[
         "loginErrorMessage" => "Неправильно указан логин",
         "passwordError" => "Y",
         "passwordErrorMessage" => "Неправильно указан пароль",
-    ], 
-    // "name" => "",
-    // "patronymic" => "",
-    // "surname" => "",
-    // "email" => "",
-    // "tel" => "",
-    // "gender" => "",
-    // "date_of_birth" => ""
+    ],  
 ];
  
- 
-
-
-
 if($_POST['login'])
 {
     $login = htmlspecialchars($_POST['login']);
@@ -52,6 +42,7 @@ if($_POST['login'])
 
     $result = mysqli_stmt_get_result($stmt);  
     $data = mysqli_fetch_assoc($result);  
+
     if($data)
     {
         $arAnswer['error']['loginError'] = 'N';
@@ -62,17 +53,9 @@ if($_POST['login'])
             $arAnswer['error']['errorStatus'] = false;
             $arAnswer['error']['passwordError'] = 'N';
 
-            //заполняю экспортирумый массив данными пользователя из БД
-            // $arAnswer["name"] = $data["name"];
-            // $arAnswer["patronymic"] = $data["patronymic"];
-            // $arAnswer["surname"] = $data["surname"];
-            // $arAnswer["email"] = $data["email"];
-            // $arAnswer["tel"] = $data["tel"];
-            // $arAnswer["gender"] = $data["gender"];
-            // $arAnswer["date_of_birth"] = $data["date_of_birth"]; 
-
-            session_start();
+            //заполняю сессию данными о пользователе.
             $_SESSION['auth'] = true;
+            $_SESSION['login'] = $data["login"];
             $_SESSION['name'] = $data["name"];
             $_SESSION['patronymic'] = $data["patronymic"];
             $_SESSION['surname'] = $data["surname"];
