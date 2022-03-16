@@ -28,13 +28,13 @@ $arAnswer =[
         "passwordError" => "Y",
         "passwordErrorMessage" => "Неправильно указан пароль",
     ], 
-    "name" => "",
-    "patronymic" => "",
-    "surname" => "",
-    "email" => "",
-    "tel" => "",
-    "gender" => "",
-    "date_of_birth" => ""
+    // "name" => "",
+    // "patronymic" => "",
+    // "surname" => "",
+    // "email" => "",
+    // "tel" => "",
+    // "gender" => "",
+    // "date_of_birth" => ""
 ];
  
  
@@ -63,13 +63,13 @@ if($_POST['login'])
             $arAnswer['error']['passwordError'] = 'N';
 
             //заполняю экспортирумый массив данными пользователя из БД
-            $arAnswer["name"] = $data["name"];
-            $arAnswer["patronymic"] = $data["patronymic"];
-            $arAnswer["surname"] = $data["surname"];
-            $arAnswer["email"] = $data["email"];
-            $arAnswer["tel"] = $data["tel"];
-            $arAnswer["gender"] = $data["gender"];
-            $arAnswer["date_of_birth"] = $data["date_of_birth"]; 
+            // $arAnswer["name"] = $data["name"];
+            // $arAnswer["patronymic"] = $data["patronymic"];
+            // $arAnswer["surname"] = $data["surname"];
+            // $arAnswer["email"] = $data["email"];
+            // $arAnswer["tel"] = $data["tel"];
+            // $arAnswer["gender"] = $data["gender"];
+            // $arAnswer["date_of_birth"] = $data["date_of_birth"]; 
 
             session_start();
             $_SESSION['auth'] = true;
