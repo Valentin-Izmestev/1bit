@@ -1,3 +1,10 @@
+<?
+include_once './main/functions.php';
+ 
+    if(isAuth()){
+        header('Location: personal.php');
+    }
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,7 +12,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1 бит</title>
+    <title>Страница авторизации</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -21,14 +28,9 @@
                 <span class="db caption">Пароль</span>
                 <input type="password" name="password" class="db inputbox password" autocomplete="off" placeholder="" value="">
             </label>
-            <input type="submit" name="submit" value="Авторизоваться">
+            <input type="submit" class="btn" name="submit" value="Авторизоваться">
         </form> 
-    </div>
-    <!-- <template id="user-box">
-        <div class="hellow">
-            <h1></h1>
-        </div>
-    </template> -->
+    </div> 
 </body>
 <script src="js/script.js"></script>
 
