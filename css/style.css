@@ -286,3 +286,146 @@ body {
 .footer .inner{
       padding: 2rem 0;  
 }
+
+
+
+/* ---------------POST------------------------ */
+.posts-box{
+
+}
+.post{
+    background-color: #ffffff;
+    box-sizing: border-box;
+    padding: 2rem 2rem 0 2rem;
+    border-radius: 5px;
+    margin-bottom: 4rem;
+    border-bottom: 1px solid transparent;
+    box-shadow: 0px 1px 7px -3px #000000;
+}
+.post .post__header{ 
+    display: flex;
+    margin-bottom: 2rem; 
+} 
+.post .post__header .post__img{  
+    margin-right: 2rem;
+}
+.post .post__header .post__img img{
+    max-width: 350px;
+    max-height: 233px;
+    object-fit: cover;
+    object-position: center center;
+    aspect-ratio: 3/2;
+}
+.post .post__header .post__info{
+    position: relative;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column; 
+    overflow: hidden;
+}
+.post .post__header .post__info .post-title{
+    margin-bottom: 0;
+    margin-top: 1rem;
+    font-size: 3rem;
+} 
+.post .post__header .post__info time{ 
+    font-size: 1.4rem;
+    color: grey;
+}
+.post .post__header .post__info .post__info__author{
+    margin-top: 1rem;
+} 
+.post .post__header .post__info .post_preview{
+    margin-top: 1rem;
+    font-size: 1.4rem;
+    margin-bottom: 0;
+    color: grey;
+}
+.post .post__header .post__info .btn__read-post{
+    font-size: 1.5rem;
+    line-height: 3rem;
+    height: 3rem;
+    max-width: 100px;
+    margin-top: 1rem;
+}
+.post .post__header .post__info .post__control-block{
+    display: flex;
+    justify-content: flex-end; 
+    height: 3rem;
+    padding-bottom: 2rem; 
+}
+.post .post__header .post__info .post__control-block .btn{
+    position: relative;
+    width: 3rem;
+    height: 3rem;
+}
+.post .post__header .post__info .post__control-block .btn:not(:first-child){
+    margin-left: 1rem;
+}
+.post .post__header .post__info .post__control-block .post__btn-remove::before{
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    height: 1px; 
+    background-color: #ffffff;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%) rotate(-45deg);
+    transition: all 200ms ease;
+}
+.post .post__header .post__info .post__control-block .post__btn-remove::after{
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    height: 1px; 
+    background-color: #ffffff;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%) rotate(45deg);
+    transition: all 200ms ease;
+}
+.post .post__header .post__info .post__control-block .post__btn-remove:hover::before,
+.post .post__header .post__info .post__control-block .post__btn-remove:hover::after{
+    background-color: var(--active-color);
+} 
+#pencil{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    height: 90%;
+}
+#pencil .st0 {
+    fill: none;
+    stroke: #FFFFFF;
+    stroke-width: 2;
+    transition: all 200ms ease;
+}
+#pencil .st1 {
+    fill: #FFFFFF;
+    transition: all 200ms ease;
+}  
+.post .post__header .post__info .post__control-block .post__btn-edit:hover #pencil .st0 {
+    fill: none;
+    stroke: var(--active-color);
+    stroke-width: 2;
+}
+.post .post__header .post__info .post__control-block .post__btn-edit:hover #pencil .st1 {
+    fill: var(--active-color);
+}  
+
+
+.post .post__content{
+    margin-bottom: 3rem;
+}
+
+
+
+
+
+
+
+

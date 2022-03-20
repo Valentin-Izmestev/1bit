@@ -1,6 +1,6 @@
 <?
 session_start();
-include_once './main/header.php';
+include_once '../main/header.php';
 if(!isAuth())
 {
     header('Location: auth.php');
@@ -22,6 +22,6 @@ echo '<b>Пол:</b> '. $dataUser['gender'].'<br>';
 ?>
 
 <?
-include_once './main/footer.php';
+include_once '../main/footer.php';
 ?>
 
