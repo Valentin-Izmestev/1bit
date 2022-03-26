@@ -1,3 +1,5 @@
+"use sctict";
+
 window.addEventListener('load', () => {
     let wrapper = document.querySelector('.wrapper');
     let formAuth = document.querySelector('.form');
@@ -82,5 +84,24 @@ window.addEventListener('load', () => {
             })
         });
     }
+
+
+    // posts
+
+    let postBox = document.querySelector('.posts-box');
+    let postContent = document.querySelectorAll('.post__content');
+
+    if(postBox){
+        postBox.addEventListener('click', (e)=>{
+            if(e.target.classList.contains('btn__read-post')){
+                postContent.forEach((arItem)=>{
+                    arItem.removeAttribute('style');
+                })
+                let contentElem = e.target.parentElement.parentElement.nextElementSibling;
+                contentElem.style.maxHeight = contentElem.scrollHeight + 'px';
+            }
+        });
+    }
+     
 
 })

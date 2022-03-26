@@ -43,7 +43,7 @@ include_once 'functions.php';
                             ?>
                         </a>
                     <? else : ?>
-                        <a href="auth.php" class="auth-box__reg-btn btn">Войти</a>
+                        <a href="/auth.php" class="auth-box__reg-btn btn">Войти</a>
                     <? endif; ?>
 
                 </div>

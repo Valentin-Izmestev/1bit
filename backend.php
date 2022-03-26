@@ -1,28 +1,14 @@
 <?php 
 session_start();
 include_once './main/functions.php';
+include_once './main/db.php'; //подключаю файл в котором устанавливается соединение с базой данных
 //если пользователь авторизован, то перевожу на указанную страницу и прекращаю выполнение скрипта.
 if(isAuth())
 {
     header('Location: personal.php');
     die();
 }
-//подключаюсь к БД
-$dbHost = 'localhost';
-$dbUser = 'root';
-$dbPass = '';
-$dbName = '1bit';
- 
-$connection = mysqli_connect($dbHost, $dbUser, $dbPass, $dbName);
 
-if(!$connection)
-{
-    echo 'Проблемы с подключением к БД';
-    die();
-}else{
-    // echo 'Подключение к БД успешно';
-}
-mysqli_query($connection, "SET NAMES 'utf8'"); 
     
 $_POST = json_decode(file_get_contents("php://input"), true);
  
