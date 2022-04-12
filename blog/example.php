@@ -2,6 +2,7 @@
 session_start();
 include_once '../main/header.php';
 ?>
+<h1>Статьи пример</h1>
 <div class="posts-box">
     <article class="post">
         <header class="post__header">
@@ -138,7 +139,6 @@ include_once '../main/header.php';
         </div>
 
     </article>
- 
 </div>
 
 <?

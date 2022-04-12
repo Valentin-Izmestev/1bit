@@ -8,7 +8,11 @@ INSERT INTO `users` (
 `email`,
 `tel`,
 `gender`,
-`date_of_birth`
+`date_of_birth`,
+`active`,
+`last_auth_date`,
+`register_date`,
+`nickname`
 )
 VALUES
 (
@@ -21,7 +25,12 @@ VALUES
     'ivanos@mail.ru',
     '89514566258',
     'm',
-    '1989-12-05'
+    '1989-12-05',
+    0,
+    '1989-12-05 15:08:23',
+    '20021-10-05',
+    'ivanos'
+
 ),
 (
     2,

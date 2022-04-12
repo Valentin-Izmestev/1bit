@@ -1,0 +1,1 @@
+SELECT `posts`.`id`, `posts`.`title`, `posts`.`preview_img`, `posts`.`create_date`, `posts`.`preview`, `posts`.`content`, `users`.`name`, `users`.`patronymic`, `users`.`surname`, `users`.`nickname`   FROM `posts` JOIN `users` ON `posts`.`author_id` = `users`.`id` ORDER BY `posts`.`create_date` DESC

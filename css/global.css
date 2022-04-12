@@ -35,9 +35,10 @@ button:hover, .button:hover{transition: opacity 1.2s, visibility 0s linear 1.2s;
     overflow: hidden;
 }
 
-.clear{clear:both; height:1px;}
+.clear{clear:both;}
 .fleft{float:left;}
 .fright{float:right;}
+.flex{display: flex;}
 .db{display:block;}
 .inb{display:inline-block;}
 .in{display:inline;}

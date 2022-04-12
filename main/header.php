@@ -24,19 +24,22 @@ include_once 'functions.php';
                 <nav>
                     <ul class="main-menu">
                         <li>
-                            <a href="#">Страница</a>
+                            <a href="/blog/">Все статьи</a>
                         </li>
-                        <li>
-                            <a href="#">Страница</a>
-                        </li>
-                        <li>
-                            <a href="#">Страница</a>
-                        </li>
+                        <? if (isAuth()) : ?>
+                            <li>
+                                <a href="/personal/">Моя страница</a>
+                            </li>
+                            <li>
+                                <a href="/personal/myblog">Мои статьи</a>
+                            </li>
+                        <?endif;?>
+
                     </ul>
                 </nav>
                 <div class="auth-box">
                     <? if (isAuth()) : ?>
-                        <a href="/personal.php" class="user-name">
+                        <a href="/personal/" class="user-name">
                             <?
                             $arUserInfo = getUserInfo();
                             echo $arUserInfo['surname'] . ' ' . $arUserInfo['name'];
