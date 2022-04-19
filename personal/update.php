@@ -7,6 +7,9 @@ if (!isAuth()) {
     die();
 }
 $dataUser = User::getData();
+echo '<pre>';
+var_dump($dataUser);
+echo '</pre>';
 ?>
 
 <h1>Данные пользователя</h1>

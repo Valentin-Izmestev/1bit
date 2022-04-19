@@ -8,7 +8,7 @@ if (!isAuth()) {
     header('Location: ../../auth.php');
     die();
 }
-$arResult = Post::get($connection, true);
+$arResult = Post::get(true);
 ?>
 <h1>Мои статьи</h1> 
 <a href="/personal/myblog/add.php" class="btn btn_add-post">Добавить статью</a>

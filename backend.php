@@ -28,30 +28,32 @@ else
  
 if($_POST_JSON['form'] === 'form-auth')
 {
-    echo User::login($_POST_JSON, $connection);
+    echo User::login($_POST_JSON);
 }
 if($_POST_JSON['form'] === 'form-reg')
 {
-    echo User::registeration($_POST_JSON, $connection);
+    echo User::registeration($_POST_JSON);
 }
 if($_POST_JSON['form'] === 'form-update')
 {
-    echo User::update($_POST_JSON, $connection);
+    echo User::update($_POST_JSON);
 }
+
+//работа со статьями 
 if($_POST['form'] === 'post_add')
 {
-    echo Post::add($_POST, $_FILES,  $connection);  
+    echo Post::add($_POST, $_FILES);  
 }
 if($_POST['mission'] === 'delete')
 {
     $postId = (int) $_POST['post_id'];
-    echo Post::delete($postId, $connection);
+    echo Post::delete($postId);
 }
 if($_POST['form'] === 'post_edit'){ 
     $postId = (int) $_POST['post_id'];
     
     if(!empty($_FILES)){ 
-        $migo =  Post::update($_POST, $_FILES, $connection, $postId); 
+        $migo =  Post::update($_POST, $_FILES, $postId); 
         print_r($migo); 
     }
     else
@@ -59,7 +61,7 @@ if($_POST['form'] === 'post_edit'){
         $arFiles = [
             "no_files" => true
         ];
-        $migo =  Post::update($_POST, $arFiles, $connection, $postId);
+        $migo =  Post::update($_POST, $arFiles,  $postId);
         print_r($migo); 
     }
 }

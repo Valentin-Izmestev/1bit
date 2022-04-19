@@ -23,17 +23,19 @@ body {
 }
 
 .btn{
+    position: relative;
     display: block;
     box-sizing: border-box;
     border-radius: 5px;
     padding: 0 0.5rem;
     border: 2px solid var(--active-color);
-    background-color: var(--active-color);;
+    background-color: var(--active-color);
     height: 50px;
     line-height: 49px;
     cursor: pointer;
     color: #ffffff; 
     transition: all 200ms ease;
+    z-index: 10;;
 }
 
 .btn:hover{

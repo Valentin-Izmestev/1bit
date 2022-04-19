@@ -16,8 +16,9 @@ window.addEventListener('load', () => {
     function showSuccessMessage(container, message) {
         let successMessageTemplate = document.querySelector('#successful-message-template').content;
         let successMessage = successMessageTemplate.querySelector('.successful-message');
-        successMessage.textContent = message;
-        container.appendChild(successMessage);
+        let newSuccessMessage = successMessage.cloneNode(true);
+        newSuccessMessage.textContent = message;
+        container.appendChild(newSuccessMessage);
     }
 
     // валидация полей с паролем
@@ -53,14 +54,14 @@ window.addEventListener('load', () => {
             formRegInput.forEach((value, key) => {
                 formRegInput[key].addEventListener('input', (e) => {
                     formRegInput[key].classList.remove('error');
-                    console.log(formRegInput[key]);
+                    // console.log(formRegInput[key]);
 
                     if (formRegInput[key].nextElementSibling) {
                         formRegInput[key].nextElementSibling.textContent = '';
-                        console.log(formRegInput[key].nextElementSibling);
+                        // console.log(formRegInput[key].nextElementSibling);
                     } else if (formRegInput[key].parentElement.parentElement.lastElementChild) {
                         formRegInput[key].parentElement.parentElement.lastElementChild.textContent = '';
-                        console.log(formRegInput[key].nextElementSibling);
+                        // console.log(formRegInput[key].nextElementSibling);
                     }
                     if (formRegInput[key].getAttribute('name') === 'gender') {
                         formRegInput[key].parentElement.parentElement.lastElementChild.textContent = '';
@@ -69,14 +70,13 @@ window.addEventListener('load', () => {
                 });
             });
 
-
             let dataForm = new FormData(formReg);
             let fdObject = {};
             dataForm.forEach((value, key) => {
                 fdObject[key] = value;
             });
 
-            console.log(fdObject);
+            // console.log(fdObject);
             let jsonToServer = JSON.stringify(fdObject);
 
             let request = new XMLHttpRequest();
@@ -87,16 +87,15 @@ window.addEventListener('load', () => {
             request.addEventListener('load', () => {
                 if (request.status === 200) {
                     let responseFromServer = JSON.parse(request.response);
-                    if (!responseFromServer.error_status) {
-                        window.location.href = "/personal/";
+                    console.log(responseFromServer);
+                    if (responseFromServer.status) {
+                        window.location.href = "./personal";
                     } else {
                         //код обработки ошибок
-                        for (let key in responseFromServer) {
-                            if (key === 'error_status') {
-                                continue;
-                            }
-                            if (responseFromServer[key].error) {
+                        for (let key in responseFromServer.data) {
+                            if (responseFromServer.data[key].error) {
                                 let element = document.querySelector(`.${key}`);
+                                console.log(element);
                                 let elementInput = document.querySelectorAll(`.${key} input`);
                                 let elementMessage = element.lastElementChild;
 
@@ -104,11 +103,10 @@ window.addEventListener('load', () => {
                                     elementInput[key].classList.add('error');
                                 });
 
-                                elementMessage.textContent = responseFromServer[key].error_message;
+                                elementMessage.textContent = responseFromServer.data[key].error_message;
                             }
                         }
-                    }
-                    console.log(responseFromServer);
+                    } 
                 } else {
                     console.log('Что-то пошло не так');
                 }
@@ -214,15 +212,12 @@ window.addEventListener('load', () => {
                 if (request.status === 200) {
                     // console.log(request.response);
                     let responseFromServer = JSON.parse(request.response);
-                    console.log(responseFromServer.error_status);
-                    if (responseFromServer.error_status) {
-                        for (let key in responseFromServer) {
-                            if (responseFromServer[key].error_status) {
-                                continue;
-                            }
-                            if (responseFromServer[key].error) {
+                    console.log(responseFromServer);
+                    if (!responseFromServer.status) {
+                        for (let key in responseFromServer.data) { 
+                            if (responseFromServer.data[key].error) {
                                 let errorElem = document.querySelector(`.error-message__${key}`);
-                                errorElem.textContent = responseFromServer[key].error_message;
+                                errorElem.textContent = responseFromServer.data[key].error_message;
                             }
                         }
                     } else {
@@ -243,6 +238,7 @@ window.addEventListener('load', () => {
 
         });
     }
+
     //открытие и закрытие постов
 
     let postBox = document.querySelector('.posts-box');
@@ -259,6 +255,7 @@ window.addEventListener('load', () => {
             }
         });
     }
+    
     // создание статьи
     let postAdd = document.querySelector('.post-add');
     if (postAdd) {
@@ -289,10 +286,10 @@ window.addEventListener('load', () => {
             request.addEventListener('load', () => {
                 if (request.status === 200) {
                     let jsonFormServer = JSON.parse(request.response);
-                    if (jsonFormServer.title.error) {
-
+                    console.log(jsonFormServer);
+                    if (!jsonFormServer.status) { 
                         titleErrorMessage.classList.add('error');
-                        titleErrorMessage.nextElementSibling.textContent = jsonFormServer.title.error_message;
+                        titleErrorMessage.nextElementSibling.textContent = jsonFormServer.data.title.error_message;
                     } else {
                         showSuccessMessage(wrapper, "Статья успешно сохранена");
                         let successfulMessage = document.querySelector('.successful-message');
@@ -333,7 +330,9 @@ window.addEventListener('load', () => {
 
                     request.addEventListener('load', function () {
                         if (request.status === 200) {
-                            if (request.response) {
+                            $messageFromServer = JSON.parse(request.response)
+                            console.log($messageFromServer);
+                            if ($messageFromServer.status) {
                                 postElem.remove();
                             }
                         }

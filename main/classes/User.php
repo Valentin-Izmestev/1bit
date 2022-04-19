@@ -20,10 +20,9 @@ class User
      * Статический метод login() необходим для авторизации пользователя.
      * Принимает два атрибута:
      * - $postMessageFromForm - массив $_POST получаемый от формы авторизации
-     * - $oConnectionDB - объект подключения к базе данных
      * возвращает json с данными о результате проверки логина и пароля
      */
-    public static function login(array $postMessageFromForm, object $oConnectionDB)
+    public static function login(array $postMessageFromForm)
     {
         //экспортируемый массив с информацией о прогрессе авторизации 
         $arAnswer = [
@@ -35,11 +34,12 @@ class User
                 "passwordErrorMessage" => "Неправильно указан пароль",
             ],
         ];
+        global $connection;
 
         if ($postMessageFromForm['login']) {
             $login = htmlspecialchars($postMessageFromForm['login']);
             $query = "SELECT * FROM `users` WHERE `login`=?";
-            $stmt = mysqli_prepare($oConnectionDB, $query);
+            $stmt = mysqli_prepare($connection, $query);
 
             mysqli_stmt_bind_param($stmt, 's', $login);
             mysqli_stmt_execute($stmt);
@@ -71,9 +71,9 @@ class User
                 }
                 $currentDate = date('Y.m.d H:i:s');
                 // записываю в БД информацию, что пользователь активен.
-                mysqli_query($oConnectionDB, "UPDATE `users` SET `active`=1 WHERE `id`=" . $data["id"]);
+                mysqli_query($connection, "UPDATE `users` SET `active`=1 WHERE `id`=" . $data["id"]);
                 // записываю в БД последнюю дату авторизации
-                mysqli_query($oConnectionDB, "UPDATE `users` SET `last_auth_date`='" . $currentDate . "' WHERE `id`=" . $data["id"]);
+                mysqli_query($connection, "UPDATE `users` SET `last_auth_date`='" . $currentDate . "' WHERE `id`=" . $data["id"]);
             }
         }
         $json = json_encode($arAnswer);
@@ -85,9 +85,10 @@ class User
      * Использует аттрибуты:
      * - $oConnectionDB - объект подключения к базе данных
      */
-    public static function logout(object $oConnectionDB)
+    public static function logout()
     {
-        mysqli_query($oConnectionDB, "UPDATE `users` SET `active`=0 WHERE `id`=" . $_SESSION['id']);
+        global $connection;
+        mysqli_query($connection, "UPDATE `users` SET `active`=0 WHERE `id`=" . $_SESSION['id']);
         session_destroy();
     }
 
@@ -130,84 +131,48 @@ class User
      * - $oConnectionDB - объект подключения к базе данных
      * Возвращает массив с данными о проверке 
      */
-    public static function validation(array $postMessageFromForm, object $oConnectionDB)
+    public static function validation(array $postMessageFromForm)
     {
+        global $connection;
         //экспортируемый массив с информацией о прогрессе регистрации 
         $arAnswer = [
-            "error_status" => false,
-            "name" => [
-                "error" => false,
-                "error_message" => ""
-            ],
-            "patronymic" => [
-                "error" => false,
-                "error_message" => ""
-            ],
-            "surname" => [
-                "error" => false,
-                "error_message" => ""
-            ],
-            "email" => [
-                "error" => false,
-                "error_message" => ""
-            ],
-            "login" => [
-                "error" => false,
-                "error_message" => ""
-            ],
-            "password" => [
-                "error" => false,
-                "error_message" => ""
-            ],
-            "tel" => [
-                "error" => false,
-                "error_message" => ""
-            ],
-            "gender" => [
-                "error" => false,
-                "error_message" => ""
-            ],
-            "date_of_birth" => [
-                "error" => false,
-                "error_message" => ""
-            ],
-            "nickname" => [
-                "error" => false,
-                "error_message" => ""
-            ]
+            "status" => true,
+            "data" =>[],
+            "message" => ""
+            
         ];
         //проверка заполнения поля Имя
         if ($postMessageFromForm['name'] !== '') {
-            $arAnswer['name']['error'] = false;
-            $arAnswer['name']['error_message'] = "";
+            $arAnswer['data']['name']['error'] = false;
+            $arAnswer['data']['name']['error_message'] = "";
         } else {
-            $arAnswer['name']['error'] = true;
-            $arAnswer['name']['error_message'] = "Поле Имя не заполнено";
-            if ($arAnswer['error_status'] === false) {
-                $arAnswer['error_status'] = true;
+            $arAnswer['data']['name']['error'] = true;
+            $arAnswer['data']['name']['error_message'] = "Поле Имя не заполнено";
+            if ($arAnswer['status'] === true) {
+                $arAnswer['status'] = false;
             }
         }
 
         //Проверка на заполнение поля Отчество
         if ($postMessageFromForm['patronymic'] !== '') {
-            $arAnswer['patronymic']['error'] = false;
-            $arAnswer['patronymic']['error_message'] = "";
+            $arAnswer['data']['patronymic']['error'] = false;
+            $arAnswer['data']['patronymic']['error_message'] = "";
         } else {
-            $arAnswer['patronymic']['error'] = true;
-            $arAnswer['patronymic']['error_message'] = "Поле Отчество не заполнено";
-            if ($arAnswer['error_status'] === false) {
-                $arAnswer['error_status'] = true;
+            $arAnswer['data']['patronymic']['error'] = true;
+            $arAnswer['data']['patronymic']['error_message'] = "Поле Отчество не заполнено";
+            if ($arAnswer['status'] === true) {
+                $arAnswer['status'] = false;
             }
         }
         //Проверка на заполнение поля Фамилия
         if ($postMessageFromForm['surname'] !== '') {
-            $arAnswer['surname']['error'] = false;
-            $arAnswer['surname']['error_message'] = "";
+            $arAnswer['data']['surname']['error'] = false;
+            $arAnswer['data']['surname']['error_message'] = "";
         } else {
-            $arAnswer['surname']['error'] = true;
-            $arAnswer['surname']['error_message'] = "Поле Фамилия не заполнено";
-            if ($arAnswer['error_status'] === false) {
-                $arAnswer['error_status'] = true;
+            $arAnswer['data']['surname']['error'] = true;
+            $arAnswer['data']['surname']['error_message'] = "Поле Фамилия не заполнено";
+            if ($arAnswer['status'] === true) {
+                $arAnswer['status'] = false;
             }
         }
 
@@ -215,51 +180,51 @@ class User
         if (self::isAuth()) {
             // получить эл.почту пользователя
             $query = "SELECT `email` FROM `users` WHERE `id`=" . $_SESSION['id'];
-            $result = mysqli_query($oConnectionDB, $query);
+            $result = mysqli_query($connection, $query);
             $currentUserEmail = mysqli_fetch_assoc($result);
 
             if ($currentUserEmail['email'] !== $postMessageFromForm['email']) {
                 if (filter_var($postMessageFromForm['email'], FILTER_VALIDATE_EMAIL)) {
-                    if (self::isContaints('email', $postMessageFromForm['email'], $oConnectionDB)) {
-                        $arAnswer['email']['error'] = true;
-                        $arAnswer['email']['error_message'] = 'Такая почта уже используется';
-                        if ($arAnswer['error_status'] === false) {
-                            $arAnswer['error_status'] = true;
+                    if (self::isContaints('email', $postMessageFromForm['email'])) {
+                        $arAnswer['data']['email']['error'] = true;
+                        $arAnswer['data']['email']['error_message'] = 'Такая почта уже используется';
+                        if ($arAnswer['status'] === true) {
+                            $arAnswer['status'] = false;
                         }
                     } else {
-                        $arAnswer['email']['error'] = false;
-                        $arAnswer['email']['error_message'] = '';
+                        $arAnswer['data']['email']['error'] = false;
+                        $arAnswer['data']['email']['error_message'] = '';
                     }
                 } else {
-                    $arAnswer['email']['error'] = true;
-                    $arAnswer['email']['error_message'] = 'Почта введена некорректно';
+                    $arAnswer['data']['email']['error'] = true;
+                    $arAnswer['data']['email']['error_message'] = 'Почта введена некорректно';
 
-                    if ($arAnswer['error_status'] === false) {
-                        $arAnswer['error_status'] = true;
+                    if ($arAnswer['status'] === true) {
+                        $arAnswer['status'] = false;
                     }
                 }
             } else {
-                $arAnswer['email']['error'] = false;
-                $arAnswer['email']['error_message'] = '';
+                $arAnswer['data']['email']['error'] = false;
+                $arAnswer['data']['email']['error_message'] = '';
             }
         } else {
             if (filter_var($postMessageFromForm['email'], FILTER_VALIDATE_EMAIL)) {
 
-                if (self::isContaints('email', $postMessageFromForm['email'], $oConnectionDB)) {
-                    $arAnswer['email']['error'] = true;
-                    $arAnswer['email']['error_message'] = 'Такая почта уже используется';
-                    if ($arAnswer['error_status'] === false) {
-                        $arAnswer['error_status'] = true;
+                if (self::isContaints('email', $postMessageFromForm['email'])) {
+                    $arAnswer['data']['email']['error'] = true;
+                    $arAnswer['data']['email']['error_message'] = 'Такая почта уже используется';
+                    if ($arAnswer['status'] === true) {
+                        $arAnswer['status'] = false;
                     }
                 } else {
-                    $arAnswer['email']['error'] = false;
-                    $arAnswer['email']['error_message'] = '';
+                    $arAnswer['data']['email']['error'] = false;
+                    $arAnswer['data']['email']['error_message'] = '';
                 }
             } else {
-                $arAnswer['email']['error'] = true;
-                $arAnswer['email']['error_message'] = 'Почта введена некорректно';
-                if ($arAnswer['error_status'] === false) {
-                    $arAnswer['error_status'] = true;
+                $arAnswer['data']['email']['error'] = true;
+                $arAnswer['data']['email']['error_message'] = 'Почта введена некорректно';
+                if ($arAnswer['status'] === true) {
+                    $arAnswer['status'] = false;
                 }
             }
         }
@@ -269,69 +234,68 @@ class User
         if (self::isAuth()) {
             // получить логин текущего пользователя
             $query = "SELECT `login` FROM `users` WHERE `id`=" . $_SESSION['id'];
-            $result = mysqli_query($oConnectionDB, $query);
+            $result = mysqli_query($connection, $query);
             $currentUserLogin = mysqli_fetch_assoc($result);
 
             if ($currentUserLogin['login'] !== $postMessageFromForm['login']) {
                 if ($postMessageFromForm['login'] !== '') {
-                    if (self::isContaints('login', $postMessageFromForm['login'], $oConnectionDB)) {
-                        $arAnswer['login']['error'] = true;
-                        $arAnswer['login']['error_message'] = 'Такой логин уже используется';
-                        if ($arAnswer['error_status'] === false) {
-                            $arAnswer['error_status'] = true;
+                    if (self::isContaints('login', $postMessageFromForm['login'])) {
+                        $arAnswer['data']['login']['error'] = true;
+                        $arAnswer['data']['login']['error_message'] = 'Такой логин уже используется';
+                        if ($arAnswer['status'] === true) {
+                            $arAnswer['status'] = false;
                         }
                     } else {
-                        $arAnswer['login']['error'] = false;
-                        $arAnswer['login']['error_message'] = '';
+                        $arAnswer['data']['login']['error'] = false;
+                        $arAnswer['data']['login']['error_message'] = '';
                     }
                 } else {
-                    $arAnswer['login']['error'] = true;
-                    $arAnswer['login']['error_message'] = 'Поле Логин не заполнено';
-                    if ($arAnswer['error_status'] === false) {
-                        $arAnswer['error_status'] = true;
+                    $arAnswer['data']['login']['error'] = true;
+                    $arAnswer['data']['login']['error_message'] = 'Поле Логин не заполнено';
+                    if ($arAnswer['status'] === true) {
+                        $arAnswer['status'] = false;
                     }
                 }
             }
         } else {
             if ($postMessageFromForm['login'] !== '') {
-                if (self::isContaints('login', $postMessageFromForm['login'], $oConnectionDB)) {
-                    $arAnswer['login']['error'] = true;
-                    $arAnswer['login']['error_message'] = 'Такой логин уже используется';
-                    if ($arAnswer['error_status'] === false) {
-                        $arAnswer['error_status'] = true;
+                if (self::isContaints('login', $postMessageFromForm['login'])) {
+                    $arAnswer['data']['login']['error'] = true;
+                    $arAnswer['data']['login']['error_message'] = 'Такой логин уже используется';
+                    if ($arAnswer['status'] === true) {
+                        $arAnswer['status'] = false;
                     }
                 } else {
-                    $arAnswer['login']['error'] = false;
-                    $arAnswer['login']['error_message'] = '';
+                    $arAnswer['data']['login']['error'] = false;
+                    $arAnswer['data']['login']['error_message'] = '';
                 }
             } else {
-                $arAnswer['login']['error'] = true;
-                $arAnswer['login']['error_message'] = 'Поле Логин не заполнено';
-                if ($arAnswer['error_status'] === false) {
-                    $arAnswer['error_status'] = true;
+                $arAnswer['data']['login']['error'] = true;
+                $arAnswer['data']['login']['error_message'] = 'Поле Логин не заполнено';
+                if ($arAnswer['status'] === true) {
+                    $arAnswer['status'] = false;
                 }
             }
         }
-
-
+ 
         //Валидация пароля
         if (isset($postMessageFromForm['password'])) {
             if ($postMessageFromForm['password'] !== '' && $postMessageFromForm['check_password'] !== '') {
                 if ($postMessageFromForm['password'] === $postMessageFromForm['check_password']) {
-                    $arAnswer['password']['error'] = false;
-                    $arAnswer['password']['error_message'] = '';
+                    $arAnswer['data']['password']['error'] = false;
+                    $arAnswer['data']['password']['error_message'] = '';
                 } else {
-                    $arAnswer['password']['error'] = true;
-                    $arAnswer['password']['error_message'] = 'Пароль и повторение пароля не совпадают';
-                    if ($arAnswer['error_status'] === false) {
-                        $arAnswer['error_status'] = true;
+                    $arAnswer['data']['password']['error'] = true;
+                    $arAnswer['data']['password']['error_message'] = 'Пароль и повторение пароля не совпадают';
+                    if ($arAnswer['status'] === true) {
+                        $arAnswer['status'] = false;
                     }
                 }
             } else {
-                $arAnswer['password']['error'] = true;
-                $arAnswer['password']['error_message'] = 'Поле Пароль не заполнено';
-                if ($arAnswer['error_status'] === false) {
-                    $arAnswer['error_status'] = true;
+                $arAnswer['data']['password']['error'] = true;
+                $arAnswer['data']['password']['error_message'] = 'Поле Пароль не заполнено';
+                if ($arAnswer['status'] === true) {
+                    $arAnswer['status'] = false;
                 }
             }
         }
@@ -339,85 +303,85 @@ class User
 
         //Проверка на заполнение поля Телефон
         if ($postMessageFromForm['tel'] !== '') {
-            $arAnswer['tel']['error'] = false;
-            $arAnswer['tel']['error_message'] = "";
+            $arAnswer['data']['tel']['error'] = false;
+            $arAnswer['data']['tel']['error_message'] = "";
         } else {
-            $arAnswer['tel']['error'] = true;
-            $arAnswer['tel']['error_message'] = "Поле Телефон не заполнено";
-            if ($arAnswer['error_status'] === false) {
-                $arAnswer['error_status'] = true;
+            $arAnswer['data']['tel']['error'] = true;
+            $arAnswer['data']['tel']['error_message'] = "Поле Телефон не заполнено";
+            if ($arAnswer['status'] === true) {
+                $arAnswer['status'] = false;
             }
         }
         //Проверка на заполнение поля Пол
         if (isset($postMessageFromForm['gender'])) {
-            $arAnswer['gender']['error'] = false;
-            $arAnswer['gender']['error_message'] = "";
+            $arAnswer['data']['gender']['error'] = false;
+            $arAnswer['data']['gender']['error_message'] = "";
         } else {
-            $arAnswer['gender']['error'] = true;
-            $arAnswer['gender']['error_message'] = "Не указан пол";
-            if ($arAnswer['error_status'] === false) {
-                $arAnswer['error_status'] = true;
+            $arAnswer['data']['gender']['error'] = true;
+            $arAnswer['data']['gender']['error_message'] = "Не указан пол";
+            if ($arAnswer['status'] === true) {
+                $arAnswer['status'] = false;
             }
         }
         //Проверка на заполнение поля Дата рождения
         if ($postMessageFromForm['date_of_birth'] !== '') {
-            $arAnswer['date_of_birth']['error'] = false;
-            $arAnswer['date_of_birth']['error_message'] = "";
+            $arAnswer['data']['date_of_birth']['error'] = false;
+            $arAnswer['data']['date_of_birth']['error_message'] = "";
         } else {
-            $arAnswer['date_of_birth']['error'] = true;
-            $arAnswer['date_of_birth']['error_message'] = "Ну указана дата рождения";
-            if ($arAnswer['error_status'] === false) {
-                $arAnswer['error_status'] = true;
+            $arAnswer['data']['date_of_birth']['error'] = true;
+            $arAnswer['data']['date_of_birth']['error_message'] = "Ну указана дата рождения";
+            if ($arAnswer['status'] === true) {
+                $arAnswer['status'] = false;
             }
         }
 
-        // Проверка на уникальность никнейма
+        // // Проверка на уникальность никнейма
         if (self::isAuth()) {
             // получить логин текущего пользователя
             $query = "SELECT `nickname` FROM `users` WHERE `id`=" . $_SESSION['id'];
-            $result = mysqli_query($oConnectionDB, $query);
+            $result = mysqli_query($connection, $query);
             $currentUserNickname = mysqli_fetch_assoc($result);
 
             if ($currentUserNickname['nickname'] !== $postMessageFromForm['nickname']) {
                 if ($postMessageFromForm['nickname'] !== '') {
-                    if (self::isContaints('nickname', $postMessageFromForm['nickname'], $oConnectionDB)) {
-                        $arAnswer['nickname']['error'] = true;
-                        $arAnswer['nickname']['error_message'] = 'Такой никнейм уже используется';
-                        if ($arAnswer['error_status'] === false) {
-                            $arAnswer['error_status'] = true;
+                    if (self::isContaints('nickname', $postMessageFromForm['nickname'])) {
+                        $arAnswer['data']['nickname']['error'] = true;
+                        $arAnswer['data']['nickname']['error_message'] = 'Такой никнейм уже используется';
+                        if ($arAnswer['status'] === true) {
+                            $arAnswer['status'] = false;
                         }
                     } else {
-                        $arAnswer['nickname']['error'] = false;
-                        $arAnswer['nickname']['error_message'] = '';
+                        $arAnswer['data']['nickname']['error'] = false;
+                        $arAnswer['data']['nickname']['error_message'] = '';
                     }
                 } else {
-                    $arAnswer['nickname']['error'] = true;
-                    $arAnswer['nickname']['error_message'] = 'Поле Никнейм не заполнено';
-                    if ($arAnswer['error_status'] === false) {
-                        $arAnswer['error_status'] = true;
+                    $arAnswer['data']['nickname']['error'] = true;
+                    $arAnswer['data']['nickname']['error_message'] = 'Поле Никнейм не заполнено';
+                    if ($arAnswer['status'] === true) {
+                        $arAnswer['status'] = false;
                     }
                 }
             } else {
-                $arAnswer['nickname']['error'] = false;
-                $arAnswer['nickname']['error_message'] = '';
+                $arAnswer['data']['nickname']['error'] = false;
+                $arAnswer['data']['nickname']['error_message'] = '';
             }
         } else {
             if ($postMessageFromForm['nickname'] !== '') {
-                if (self::isContaints('nickname', $postMessageFromForm['nickname'], $oConnectionDB)) {
-                    $arAnswer['nickname']['error'] = true;
-                    $arAnswer['nickname']['error_message'] = 'Такой никнейм уже используется';
-                    if ($arAnswer['error_status'] === false) {
-                        $arAnswer['error_status'] = true;
+                if (self::isContaints('nickname', $postMessageFromForm['nickname'])) {
+                    $arAnswer['data']['nickname']['error'] = true;
+                    $arAnswer['data']['nickname']['error_message'] = 'Такой никнейм уже используется';
+                    if ($arAnswer['status'] === true) {
+                        $arAnswer['status'] = false;
                     }
                 } else {
-                    $arAnswer['nickname']['error'] = false;
-                    $arAnswer['nickname']['error_message'] = '';
+                    $arAnswer['data']['nickname']['error'] = false;
+                    $arAnswer['data']['nickname']['error_message'] = '';
                 }
             } else {
-                $arAnswer['nickname']['error'] = true;
-                $arAnswer['nickname']['error_message'] = 'Поле Никнейм не заполнено';
-                if ($arAnswer['error_status'] === false) {
-                    $arAnswer['error_status'] = true;
+                $arAnswer['data']['nickname']['error'] = true;
+                $arAnswer['data']['nickname']['error_message'] = 'Поле Никнейм не заполнено';
+                if ($arAnswer['status'] === true) {
+                    $arAnswer['status'] = false;
                 }
             }
         }
@@ -431,11 +395,12 @@ class User
      * - $postMessageFromForm - массив с новыми данными о пользователе
      * - $oConnectionDB - объект подключения к базе данных
      */
-    public static function registeration(array $postMessageFromForm, object $oConnectionDB)
+    public static function registeration(array $postMessageFromForm)
     {
-        $arAnswer = self::validation($postMessageFromForm, $oConnectionDB);
+        global $connection;
+        $arAnswer = self::validation($postMessageFromForm);
 
-        if (!$arAnswer['error_status']) {
+        if ($arAnswer['status']) {
             // Добавляю нового пользователя в базу данных
             $query = "INSERT INTO `users`  
             (`name`, `patronymic`, `surname`, `email`, `login`, `password`, `tel`, `gender`, `date_of_birth`, `active`, `last_auth_date`, `register_date`, `nickname`) 
@@ -454,7 +419,7 @@ class User
                 ?,
                 ?
             )";
-            $stmt = mysqli_prepare($oConnectionDB, $query);
+            $stmt = mysqli_prepare($connection, $query);
             mysqli_stmt_bind_param($stmt, 'sssssssssisss', $name, $patronymic, $surname,  $email, $login, $password, $tel, $gender, $dateOfBirth, $active, $lastAuthDate, $registerDate, $nickname);
 
             $name = htmlspecialchars(trim($postMessageFromForm['name']));
@@ -473,11 +438,18 @@ class User
 
             mysqli_stmt_execute($stmt);
 
-            $arAnswer = [
-                "error_status" => false
-            ];
+            $query = "SELECT `id` FROM `users` WHERE `login`=?";
+            $stmt = mysqli_prepare($connection, $query);
+            mysqli_stmt_bind_param($stmt, 's', $login);
+            mysqli_stmt_execute($stmt);
+
+            $result = mysqli_stmt_get_result($stmt);
+            $data = mysqli_fetch_assoc($result);
+           
+
             //Записываю данные о пользователе в сессию.
-            $_SESSION['auth'] = true;
+            $_SESSION['auth'] = true; 
+            $_SESSION['id'] = $data['id']; 
             $_SESSION['login'] = $login;
             $_SESSION['name'] =  $name;
             $_SESSION['patronymic'] = $patronymic;
@@ -502,17 +474,17 @@ class User
      * Статический метод update() обновляет данные о пользователе 
      * принимает два атрибута:
      * - $postMessageFromForm - массив с новыми данными о пользователе
-     * - $oConnectionDB - объект подключения к базе данных
      */
-    public static function update(array $postMessageFromForm, object $oConnectionDB)
+    public static function update(array $postMessageFromForm)
     { 
-        $arAnswer = self::validation($postMessageFromForm, $oConnectionDB);
-   
+        global $connection;
+        $arAnswer = self::validation($postMessageFromForm, $connection);
+        
         // написать запись данных в базу данных, а лучше проверять были ли изменения.
-        if (!$arAnswer['error_status']) {
+        if ($arAnswer['status']) {
             // делаю запрос к БД по id из $_POST запихиваю все в массив и далее сопоставляю элементы $_POST и массив из БД
             $query = "SELECT * FROM `users` WHERE `id`=" . $_SESSION['id'];
-            $result = mysqli_query($oConnectionDB, $query);
+            $result = mysqli_query($connection, $query);
             $data = mysqli_fetch_assoc($result); 
             
             foreach ($postMessageFromForm as $key => $value) {   
@@ -524,13 +496,15 @@ class User
                             continue;
                         }
                         $query = "UPDATE `users` SET ".$key."=? WHERE `id`=" . $_SESSION['id'];
-                        $stmt = mysqli_prepare($oConnectionDB, $query);  
+                        $stmt = mysqli_prepare($connection, $query);  
                         mysqli_stmt_bind_param($stmt, 's', $value);
                         mysqli_stmt_execute($stmt);  
                         $_SESSION[$key] = $value;
                 } 
             }
+            $arAnswer["status"] = true;
         }  
+        
         $jsonToFront = json_encode($arAnswer);
         return $jsonToFront; 
     }
@@ -540,14 +514,14 @@ class User
      * Принимает три атрибута:
      * - $fieldName - имя поля в таблице User
      * - $desiredValue - искомое значение
-     * - $oConnectionDB - объект подключения к базе данных
      * если есть указанное поле с указанным значением, вернет true, в противном случае false
      */
-    public static function isContaints(string $fieldName, string $desiredValue, object $oConnectionDB)
+    public static function isContaints(string $fieldName, string $desiredValue)
     {
+        global $connection;
         $val = htmlspecialchars($desiredValue);
         $query = "SELECT * FROM `users` WHERE `" . $fieldName . "`=?";
-        $stmt = mysqli_prepare($oConnectionDB, $query);
+        $stmt = mysqli_prepare($connection, $query);
         mysqli_stmt_bind_param($stmt, 's', $val);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);

@@ -263,7 +263,11 @@
 }
 
  .user-info__list li{
+     position: relative;
      margin-bottom: 1.5rem;
+ }
+ .user-info__list li .error-message{
+     text-align: left;
  }
 .user-info .btn-edit,
 .user-info--edit .btn-save{

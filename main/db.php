@@ -6,7 +6,8 @@ $dbPass = '';
 $dbName = '1bit';
  
 $connection = mysqli_connect($dbHost, $dbUser, $dbPass, $dbName);
-
+$varTest = 'test';
+//сделать $connection глобальной переменной. 
 if(!$connection)
 {
     echo 'Проблемы с подключением к БД';

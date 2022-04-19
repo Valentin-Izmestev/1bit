@@ -10,11 +10,12 @@ class Post
      * - $author - принимает значение true (будут выдан массив со статьями авторизованного пользователя) и false (будут выданы все статьи)
      * Возвращает массив с полями статей.
      */
-    public static function get( object $oConnectionDB, bool $author = false, int $postId = 0)
+    public static function get(bool $author = false, int $postId = 0)
     {
+        global $connection;
         if($postId !== 0){
             $query = "SELECT * FROM `posts` WHERE `id` = ?";
-            $stmt = mysqli_prepare($oConnectionDB, $query);
+            $stmt = mysqli_prepare($connection, $query);
             mysqli_stmt_bind_param($stmt, 'd', $postId);
             mysqli_stmt_execute($stmt);
             $result = mysqli_stmt_get_result($stmt);
@@ -25,7 +26,7 @@ class Post
         {
             $query = "SELECT `posts`.`id`, `posts`.`title`, `posts`.`preview_img`, `posts`.`create_date`, `posts`.`preview`, `posts`.`content`, `users`.`name`, `users`.`patronymic`, `users`.`surname`, `users`.`nickname` FROM `posts` JOIN `users` ON `posts`.`author_id` = `users`.`id` WHERE `posts`.`author_id` = ? ORDER BY `posts`.`create_date` DESC";
             $author_id = (int) $_SESSION['id'];
-            $stmt = mysqli_prepare($oConnectionDB, $query); 
+            $stmt = mysqli_prepare($connection, $query); 
             mysqli_stmt_bind_param($stmt, 'd', $author_id);
             mysqli_stmt_execute($stmt); 
             $result = mysqli_stmt_get_result($stmt);
@@ -35,7 +36,7 @@ class Post
         else
         {
             $query = "SELECT `posts`.`id`, `posts`.`title`, `posts`.`preview_img`, `posts`.`create_date`, `posts`.`preview`, `posts`.`content`, `users`.`name`, `users`.`patronymic`, `users`.`surname`, `users`.`nickname`   FROM `posts` JOIN `users` ON `posts`.`author_id` = `users`.`id` ORDER BY `posts`.`create_date` DESC";
-            $result = mysqli_query($oConnectionDB, $query);
+            $result = mysqli_query($connection, $query);
             for($data = []; $row = mysqli_fetch_assoc($result); $data[] = $row);
             return $data;
         }
@@ -45,28 +46,34 @@ class Post
      * Статический метод add() добавляет новость в базу данных
      * аттрибуты:
      * - postMessageFromForm - массив с данными полей формы;
-     * - filesMessageFromForm - массив с данными файла;
-     * - oConnectionDB - объект подключения к базе данных; 
+     * - filesMessageFromForm - массив с данными файла; 
      * возвращает json
      */
-    public static function add(array $postMessageFromForm, array $filesMessageFromForm, object $oConnectionDB)
+    public static function add(array $postMessageFromForm, array $filesMessageFromForm)
     {
+        global $connection;
         $arAnswer = [
-            "error_status" => false,
-            "title" => [
-                "error" => false,
-                "error_message" => 'Поле Заголовок не заполнено'
-            ]
+            "status" => false,
+            "data" => [ 
+            ],
+            "message" => ""  
         ];
         
         if ($postMessageFromForm['title']) { 
 
             if ($filesMessageFromForm['preview_img']['name']) { 
+                $arAnswer["message"] = 'файл добавлен в хранилище';
                 move_uploaded_file($filesMessageFromForm['preview_img']['tmp_name'], './upload/' . $filesMessageFromForm['preview_img']['name']);
             }  
              
+            
+            
             $title = htmlspecialchars(trim($postMessageFromForm['title']));  
-            $fileAddres = '/upload/' . $filesMessageFromForm['preview_img']['name'];
+            $fileAddres = "";
+            if($filesMessageFromForm['preview_img']['name'] && !empty($filesMessageFromForm['preview_img']['name']))
+            {
+                $fileAddres = '/upload/' . $filesMessageFromForm['preview_img']['name'];
+            }
             $preview = htmlspecialchars(trim($postMessageFromForm['preview']));   
             $createDate = date('Y-m-d H:i:s' ); 
             $author_id = (int) $_SESSION['id'];
@@ -74,24 +81,21 @@ class Post
             
             $query = "INSERT INTO `posts` (`title`, `preview_img`, `create_date`, `preview`, `content`, `author_id`) VALUES ( ?,?, ?, ?, ?, ? )";
 
-            $stmt = mysqli_prepare($oConnectionDB, $query);
+            $stmt = mysqli_prepare($connection, $query);
 
             mysqli_stmt_bind_param($stmt, 'sssssd', $title, $fileAddres, $createDate, $preview, $postMessageFromForm['content'], $author_id);
             
             mysqli_stmt_execute($stmt); 
 
-            if ($arAnswer["error_status"]) {
-                $arAnswer["error_status"] = false;
-            }
-            if ($arAnswer["title"]["error"]) {
-                $arAnswer["title"]["error"] = false;
-            }
-            $arAnswer["title"]["error_message"] = 'Все ок, статья добавлена в БД'; 
+            $arAnswer["status"] = true;
+            $arAnswer["data"]["title"]["error"] = false;
+            $arAnswer["data"]["title"]["error_message"] = 'Ошибки нет'; 
+            $arAnswer["message"] = "Стаья успешно добавлена";
 
         } else {
-            $arAnswer["error_status"] = true;
-            $arAnswer["title"]["error"] = true;
-            $arAnswer["title"]["error_message"] = 'Поле Заголовок не заполнено'; 
+            $arAnswer["status"] = false;
+            $arAnswer["data"]["title"]["error"] = false;
+            $arAnswer["data"]["title"]["error_message"] = 'Поле Заголовок не заполнено'; 
         }
 
  
@@ -99,33 +103,58 @@ class Post
         return $jsonToFront;
     }
 
-    public static function delete(int $postId, object $oConnectionDB)
+    public static function delete(int $postId)
     {
+        global $connection;
+        
+        $arAnswer = [
+            "status" => false,
+            "data" => [],
+            "message" => ""
+        ];
+
         $query = "SELECT * FROM `posts` WHERE `id` = ?";
-        $stmt = mysqli_prepare($oConnectionDB, $query);
+        $stmt = mysqli_prepare($connection, $query);
         mysqli_stmt_bind_param($stmt, 'd', $postId);
         mysqli_stmt_execute($stmt);
 
         $result = mysqli_stmt_get_result($stmt); 
         $data = mysqli_fetch_assoc($result);
 
-        if($data['preview_img'] && file_exists('.'.$data['preview_img'])){
-            unlink('.'.$data['preview_img']);
-        }  
-        $query = "DELETE FROM `posts` WHERE `id` = ?";
-        $stmt = mysqli_prepare($oConnectionDB, $query);
-
-        mysqli_stmt_bind_param($stmt, 'd', $postId);
-        if(mysqli_stmt_execute($stmt)){
-            return true;
-        }else{
-            return false;
+        if($data['author_id'] === $_SESSION['id']){
+            $arAnswer["status"] = true;
+            $arAnswer["message"] = "id пользователя и статьи совпадают"; 
         }
-        return true;
+        else
+        {
+            $arAnswer["status"] = false;
+            $arAnswer["message"] = "У текущего пользвателя нет статьи с текущим id"; 
+        }
+        if($arAnswer["status"]){
+            if($data['preview_img'] && file_exists('.'.$data['preview_img'])){
+                unlink('.'.$data['preview_img']);
+            }  
+            $query = "DELETE FROM `posts` WHERE `id` = ?";
+            $stmt = mysqli_prepare($connection, $query);
+    
+            mysqli_stmt_bind_param($stmt, 'd', $postId);
+            
+            if(mysqli_stmt_execute($stmt)){
+                $arAnswer["status"] = true;
+                $arAnswer["message"] = "Статья удалена";
+            }else{
+                $arAnswer["status"] = false;
+                $arAnswer["message"] = "Ошибка удаления статьи";
+            } 
+        } 
+
+        $messageToFront = json_encode($arAnswer);
+        return $messageToFront;
     }
-    public static function update(array $postMessageFromForm, array $filesMessageFromForm, object $oConnectionDB, int $postId)
+    public static function update(array $postMessageFromForm, array $filesMessageFromForm, int $postId)
     { 
-        $oldPost = self::get($oConnectionDB, false, $postId);
+        global $connection;
+        $oldPost = self::get(false, $postId);
         //  return $oldPost;
         if(!$filesMessageFromForm['no_files'])
         {
@@ -155,7 +184,7 @@ class Post
                 $preview = htmlspecialchars(trim($postMessageFromForm['preview']));   
                 $createDate = date('Y-m-d H:i:s');  
 
-                $stmt = mysqli_prepare($oConnectionDB, $query);
+                $stmt = mysqli_prepare($connection, $query);
                 mysqli_stmt_bind_param($stmt, 'sssssd', $title, $fileAddres, $createDate, $preview, $postMessageFromForm['content'], $postId);
                 mysqli_stmt_execute($stmt);
                 $_SESSION['current_post_id'] = '';
@@ -182,7 +211,7 @@ class Post
                 $preview = htmlspecialchars(trim($postMessageFromForm['preview']));   
                 $createDate = date('Y-m-d H:i:s');  
 
-                $stmt = mysqli_prepare($oConnectionDB, $query);
+                $stmt = mysqli_prepare($connection, $query);
                 mysqli_stmt_bind_param($stmt, 'sssssd', $title, $fileAddres, $createDate, $preview, $postMessageFromForm['content'], $postId);
                 mysqli_stmt_execute($stmt); 
                 $_SESSION['current_post_id'] = '';
@@ -204,7 +233,7 @@ class Post
             $preview = htmlspecialchars(trim($postMessageFromForm['preview']));   
             $createDate = date('Y-m-d H:i:s');  
 
-            $stmt = mysqli_prepare($oConnectionDB, $query);
+            $stmt = mysqli_prepare($connection, $query);
             mysqli_stmt_bind_param($stmt, 'ssssd', $title, $createDate, $preview, $postMessageFromForm['content'], $postId);
             mysqli_stmt_execute($stmt);
             $_SESSION['current_post_id'] = '';

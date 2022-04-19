@@ -1,8 +1,10 @@
 <?
+session_start();
 include_once './main/classes/User.php';
-if (User::isAuth()) {
-    header('Location: personal.php');
-}
+
+   if(User::isAuth()){
+       header('Location: ./personal/');
+   }
 ?>
 <!DOCTYPE html>
 <html lang="en">

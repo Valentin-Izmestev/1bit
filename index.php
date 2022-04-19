@@ -3,7 +3,7 @@ session_start();
 include_once './main/header.php';
 include_once './main/db.php';
 include_once './main/classes/Post.php';
-$arResult = Post::get($connection);
+$arResult = Post::get();
 $postCount = 0;
 ?>
 

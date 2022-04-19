@@ -12,7 +12,7 @@ if(empty($_SESSION['current_post_id'])){
     header('Location: /personal/myblog/');
     die();
 }
-$post = Post::get($connection, false, $_SESSION['current_post_id']);
+$post = Post::get( false, $_SESSION['current_post_id']);
 
 
 ?>
