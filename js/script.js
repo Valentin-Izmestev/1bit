@@ -21,7 +21,7 @@ window.addEventListener('load', () => {
         container.appendChild(newSuccessMessage);
     }
 
-    // валидация полей с паролем
+    // проверка на совпадение полей с паролями
     if (inputPasswordCheckReg) {
         inputPasswordCheckReg.addEventListener('change', (e) => {
             if (inputPasswordReg.value != inputPasswordCheckReg.value) {
@@ -53,15 +53,12 @@ window.addEventListener('load', () => {
             let formRegInput = document.querySelectorAll('input');
             formRegInput.forEach((value, key) => {
                 formRegInput[key].addEventListener('input', (e) => {
-                    formRegInput[key].classList.remove('error');
-                    // console.log(formRegInput[key]);
+                    formRegInput[key].classList.remove('error'); 
 
                     if (formRegInput[key].nextElementSibling) {
-                        formRegInput[key].nextElementSibling.textContent = '';
-                        // console.log(formRegInput[key].nextElementSibling);
+                        formRegInput[key].nextElementSibling.textContent = ''; 
                     } else if (formRegInput[key].parentElement.parentElement.lastElementChild) {
-                        formRegInput[key].parentElement.parentElement.lastElementChild.textContent = '';
-                        // console.log(formRegInput[key].nextElementSibling);
+                        formRegInput[key].parentElement.parentElement.lastElementChild.textContent = ''; 
                     }
                     if (formRegInput[key].getAttribute('name') === 'gender') {
                         formRegInput[key].parentElement.parentElement.lastElementChild.textContent = '';
@@ -76,7 +73,7 @@ window.addEventListener('load', () => {
                 fdObject[key] = value;
             });
 
-            // console.log(fdObject);
+            console.log(fdObject);
             let jsonToServer = JSON.stringify(fdObject);
 
             let request = new XMLHttpRequest();
@@ -86,16 +83,14 @@ window.addEventListener('load', () => {
 
             request.addEventListener('load', () => {
                 if (request.status === 200) {
-                    let responseFromServer = JSON.parse(request.response);
-                    console.log(responseFromServer);
+                    let responseFromServer = JSON.parse(request.response); 
                     if (responseFromServer.status) {
                         window.location.href = "./personal";
                     } else {
                         //код обработки ошибок
                         for (let key in responseFromServer.data) {
                             if (responseFromServer.data[key].error) {
-                                let element = document.querySelector(`.${key}`);
-                                console.log(element);
+                                let element = document.querySelector(`.${key}`); 
                                 let elementInput = document.querySelectorAll(`.${key} input`);
                                 let elementMessage = element.lastElementChild;
 
@@ -115,7 +110,18 @@ window.addEventListener('load', () => {
     }
 
     // работа с авторизацией
+
     if (formAuth) {
+
+        let inputFormAuth = document.querySelectorAll(`input`);
+        inputFormAuth.forEach((event, key)=>{
+            inputFormAuth[key].addEventListener('input', ()=>{
+                if(inputFormAuth[key].classList.contains('error')){
+                    inputFormAuth[key].classList.remove('error');
+                }
+            });
+        });
+
         formAuth.addEventListener('submit', (e) => {
             e.preventDefault();
 
@@ -125,7 +131,7 @@ window.addEventListener('load', () => {
 
             dataForm.forEach((value, key) => {
                 fdObject[key] = value;
-            });
+            }); 
             let json = JSON.stringify(fdObject);
 
             let request = new XMLHttpRequest();
@@ -136,44 +142,27 @@ window.addEventListener('load', () => {
             request.addEventListener('load', () => {
                 if (request.status === 200) {
                     responseObj = JSON.parse(request.response);
-                    if (responseObj.error.errorStatus) {
-                        //если логин неправильный 
-                        if (responseObj.error.loginError === 'Y') {
-                            if (!inputLogin.classList.contains('error')) {
-                                inputLogin.classList.add('error');
-                                inputLogin.value = '';
-                                inputLogin.placeholder = responseObj.error.loginErrorMessage;
-                            }
-                        } else {
-                            if (inputLogin.classList.contains('error')) {
-                                inputLogin.classList.remove('error');
-                                inputLogin.placeholder = '';
-                                inputLogin.value = fdObject.login;
-                            }
-                        }
-                        //если пароль неправильный
-                        if (responseObj.error.passwordError === 'Y') {
-                            if (!inputPassword.classList.contains('error')) {
-                                inputPassword.classList.add('error');
-                                inputPassword.value = '';
-                                inputPassword.placeholder = responseObj.error.passwordErrorMessage;
-                            }
-                        } else {
-                            if (inputPassword.classList.contains('error')) {
-                                inputPassword.classList.remove('error');
-                                inputPassword.placeholder = '';
-                                inputPassword.value = fdObject.login;
-                            }
-                        }
-
-                    } else {
+                    console.log(responseObj);
+                    if(responseObj.status){
                         //если логин и пароль правильные.
                         window.location.href = "/personal/";
+                    }else{
+                        
+                        for(let key in responseObj.data){
+                            
+                            console.log(responseObj.data[key].error);
+                            if(responseObj.data[key].error){
+                                let currentInput = document.querySelector(`input.${key}`);
+                                currentInput.classList.add('error');
+                                currentInput.placeholder = responseObj.data[key].error_message;
+                                currentInput.value = '';
+                            }
+                        } 
                     }
                 } else {
                     console.log('что-то пошло не так');
                 }
-            })
+            });
         });
     }
 
@@ -209,24 +198,25 @@ window.addEventListener('load', () => {
             request.send(jsonToServer);
 
             request.addEventListener('load', () => {
-                if (request.status === 200) {
-                    // console.log(request.response);
-                    let responseFromServer = JSON.parse(request.response);
+                if (request.status === 200) { 
+                    let responseFromServer = JSON.parse(request.response); 
                     console.log(responseFromServer);
-                    if (!responseFromServer.status) {
+                    if (responseFromServer.status) {
+                        showSuccessMessage(wrapper, responseFromServer.message)
+                        setInterval(() => {
+                            window.location.href = '/personal/';
+                        }, 1000)
+
+                    } else {
+
                         for (let key in responseFromServer.data) { 
                             if (responseFromServer.data[key].error) {
                                 let errorElem = document.querySelector(`.error-message__${key}`);
                                 errorElem.textContent = responseFromServer.data[key].error_message;
                             }
                         }
-                    } else {
 
-                        showSuccessMessage(wrapper, "Изменеия успешно внесены!")
-
-                        setInterval(() => {
-                            window.location.href = '/personal/';
-                        }, 1000)
+                        
                     }
 
 
@@ -234,7 +224,7 @@ window.addEventListener('load', () => {
                     console.log('Что то пошло не так')
                 }
 
-            })
+            });
 
         });
     }
@@ -277,26 +267,26 @@ window.addEventListener('load', () => {
             let fdObject = {};
             dataForm.forEach((value, key) => {
                 fdObject[key] = value;
-            });
-            console.log(fdObject);
+            }); 
             let request = new XMLHttpRequest();
             request.open('POST', '../../backend.php');
             request.send(dataForm);
 
             request.addEventListener('load', () => {
                 if (request.status === 200) {
-                    let jsonFormServer = JSON.parse(request.response);
+                    let jsonFormServer = JSON.parse(request.response);  
                     console.log(jsonFormServer);
-                    if (!jsonFormServer.status) { 
-                        titleErrorMessage.classList.add('error');
-                        titleErrorMessage.nextElementSibling.textContent = jsonFormServer.data.title.error_message;
-                    } else {
-                        showSuccessMessage(wrapper, "Статья успешно сохранена");
+                    if (jsonFormServer.status) { 
+                        showSuccessMessage(wrapper, jsonFormServer.message);
                         let successfulMessage = document.querySelector('.successful-message');
                         setTimeout(() => {
                             successfulMessage.remove();
                             postAdd.reset();
                         }, 1500);
+                        
+                    } else {
+                        titleErrorMessage.classList.add('error');
+                        titleErrorMessage.nextElementSibling.textContent = jsonFormServer.data.title.error_message;
                     }
 
                 } else {
@@ -349,14 +339,11 @@ window.addEventListener('load', () => {
     if (arBtnEditBtn) {
         arBtnEditBtn.forEach((post) => {
             post.addEventListener('click', (e) => {
-                e.preventDefault();
+                e.preventDefault(); 
                 let postElem = post.parentElement.parentElement.parentElement.parentElement;
-                let postId = postElem.getAttribute('id');
-
+                let postId = postElem.getAttribute('id'); 
                 let formData = new FormData();
-                formData.append('current_post_id', postId);
-
-
+                formData.append('current_post_id', postId); 
                 let request = new XMLHttpRequest();
                 request.open('POST', '/backend.php');
                 request.send(formData);

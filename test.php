@@ -20,29 +20,49 @@ include_once './main/classes/Post.php';
 // ];
 
 // echo $_SESSION['current_post_id'];
-
-$arAnswer = [
-    "status" => false,
-    "data" => [],
-    "message" => "Сообщение"
+$arRegTest = [
+"check_password" => "",
+"date_of_birth" => "1589-10-10",
+"email" => "Ddof@mair.ru",
+"form" => "form-reg",
+"login" => "awd",
+"gender" => "m",
+"name" => "Влад",
+"nickname" => "Влад",
+"password" => "123",
+"patronymic" => "",
+"surname" => "",
+"tel" => "",
 ];
-$name = 
-$arAnswer['data']["name"]["status"]  = false;
-$arAnswer['data']["name"]["message"]  = "Ошибка";
 
-$arAnswer['data']["lastname"]["status"]  = false;
-$arAnswer['data']["lastname"]["message"]  = "Ошибка";
- 
-echo $varTest;
+$front = [
+"form" => "form-reg",
+"name" => "Bdfy",
+"patronymic" => "asfdas",
+"surname" => "sfsef",
+"email" => "sdf@mail.ru",
+"login" => "qwe",
+"password" => "qwe",
+"check_password" => "qwe",
+"tel" => "123",
+"gender" => "m",
+"date_of_birth" => "2022-04-21",
+"nickname" => "qwe",
+];
+// echo $varTest;
 // echo '<pre>';
 // var_dump($arAnswer);
 // echo '</pre>';
 echo '<hr>';
-echo $_SESSION['id'];
+// echo $_SESSION['id'];
 echo '<hr>';
 // echo User::isAuth();
 echo '<pre>';
-var_dump($_SESSION);
+// var_dump($_SESSION);
 echo '</pre>';
-
+global $connection;
+ $arAnswer = User::validation($front);
+echo '<pre>';
+var_dump($arAnswer);
+echo '</pre>';
 ?>

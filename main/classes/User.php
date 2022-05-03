@@ -22,68 +22,34 @@ class User
      * - $postMessageFromForm - массив $_POST получаемый от формы авторизации
      * возвращает json с данными о результате проверки логина и пароля
      */
-    public static function login(array $postMessageFromForm)
+    public static function login(array $arData)
     {
-        //экспортируемый массив с информацией о прогрессе авторизации 
-        $arAnswer = [
-            "error" => [
-                "errorStatus" => true,
-                "loginError" => "Y",
-                "loginErrorMessage" => "Неправильно указан логин",
-                "passwordError" => "Y",
-                "passwordErrorMessage" => "Неправильно указан пароль",
-            ],
-        ];
         global $connection;
+       //заполняю сессию данными о пользователе.
+       $_SESSION['auth'] = true;
+       $_SESSION['id'] = $arData["id"];
+       $_SESSION['login'] = $arData["login"];
+       $_SESSION['name'] = $arData["name"];
+       $_SESSION['patronymic'] = $arData["patronymic"];
+       $_SESSION['surname'] = $arData["surname"];
+       $_SESSION['email'] = $arData["email"];
+       $_SESSION['tel'] = $arData["tel"];
+       $_SESSION['gender'] = $arData["gender"];
+       $_SESSION['date_of_birth'] = $arData["date_of_birth"];
+       $_SESSION['last_auth_date'] = $arData["last_auth_date"];
+       $_SESSION['nickname'] = $arData["nickname"];
+       $currentDate = date('Y.m.d H:i:s');
 
-        if ($postMessageFromForm['login']) {
-            $login = htmlspecialchars($postMessageFromForm['login']);
-            $query = "SELECT * FROM `users` WHERE `login`=?";
-            $stmt = mysqli_prepare($connection, $query);
+       // записываю в БД информацию, что пользователь активен.
+       mysqli_query($connection, "UPDATE `users` SET `active`=1 WHERE `id`=" . $arData["id"]);
+       // записываю в БД последнюю дату авторизации
+       mysqli_query($connection, "UPDATE `users` SET `last_auth_date`='" . $currentDate . "' WHERE `id`=" . $arData["id"]);
 
-            mysqli_stmt_bind_param($stmt, 's', $login);
-            mysqli_stmt_execute($stmt);
-
-            $result = mysqli_stmt_get_result($stmt);
-            $data = mysqli_fetch_assoc($result);
-
-            if ($data) {
-                $arAnswer['error']['loginError'] = 'N';
-                $password = $postMessageFromForm['password'];
-
-                if ($data['password'] === $password) {
-                    $arAnswer['error']['errorStatus'] = false;
-                    $arAnswer['error']['passwordError'] = 'N';
-
-                    //заполняю сессию данными о пользователе.
-                    $_SESSION['auth'] = true;
-                    $_SESSION['id'] = $data["id"];
-                    $_SESSION['login'] = $data["login"];
-                    $_SESSION['name'] = $data["name"];
-                    $_SESSION['patronymic'] = $data["patronymic"];
-                    $_SESSION['surname'] = $data["surname"];
-                    $_SESSION['email'] = $data["email"];
-                    $_SESSION['tel'] = $data["tel"];
-                    $_SESSION['gender'] = $data["gender"];
-                    $_SESSION['date_of_birth'] = $data["date_of_birth"];
-                    $_SESSION['last_auth_date'] = $data["last_auth_date"];
-                    $_SESSION['nickname'] = $data["nickname"];
-                }
-                $currentDate = date('Y.m.d H:i:s');
-                // записываю в БД информацию, что пользователь активен.
-                mysqli_query($connection, "UPDATE `users` SET `active`=1 WHERE `id`=" . $data["id"]);
-                // записываю в БД последнюю дату авторизации
-                mysqli_query($connection, "UPDATE `users` SET `last_auth_date`='" . $currentDate . "' WHERE `id`=" . $data["id"]);
-            }
-        }
-        $json = json_encode($arAnswer);
-        echo $json;
+       return true;
     }
 
     /**
      * Статический метод logout() используется выхода пользователя из аккаунта 
-     * Использует аттрибуты:
-     * - $oConnectionDB - объект подключения к базе данных
      */
     public static function logout()
     {
@@ -128,23 +94,20 @@ class User
      * статический метод validation() используетя для вадидации полученных данных из формы 
      * принимает два атрибута:
      * - $postMessageFromForm - массив с новыми данными о пользователе
-     * - $oConnectionDB - объект подключения к базе данных
      * Возвращает массив с данными о проверке 
      */
     public static function validation(array $postMessageFromForm)
     {
         global $connection;
         //экспортируемый массив с информацией о прогрессе регистрации 
-        $arAnswer = [
-            "status" => true,
-            "data" =>[],
-            "message" => ""
-            
-        ];
+        global $arAnswer;
+        $arAnswer['status'] = true;
+        
         //проверка заполнения поля Имя
         if ($postMessageFromForm['name'] !== '') {
             $arAnswer['data']['name']['error'] = false;
             $arAnswer['data']['name']['error_message'] = "";
+            
         } else {
             $arAnswer['data']['name']['error'] = true;
             $arAnswer['data']['name']['error_message'] = "Поле Имя не заполнено";
@@ -164,7 +127,7 @@ class User
                 $arAnswer['status'] = false;
             }
         }
-        //Проверка на заполнение поля Фамилия
+        // Проверка на заполнение поля Фамилия
         if ($postMessageFromForm['surname'] !== '') {
             $arAnswer['data']['surname']['error'] = false;
             $arAnswer['data']['surname']['error_message'] = "";
@@ -384,89 +347,82 @@ class User
                     $arAnswer['status'] = false;
                 }
             }
-        }
-
-
+        } 
         return $arAnswer;
     }
     /**
      * Статический метод registeration() используется для добавления в БД нового пользователя
      * принимает два атрибута:
      * - $postMessageFromForm - массив с новыми данными о пользователе
-     * - $oConnectionDB - объект подключения к базе данных
      */
     public static function registeration(array $postMessageFromForm)
     {
         global $connection;
-        $arAnswer = self::validation($postMessageFromForm);
+        
+        $query = "INSERT INTO `users`  
+        (`name`, `patronymic`, `surname`, `email`, `login`, `password`, `tel`, `gender`, `date_of_birth`, `active`, `last_auth_date`, `register_date`, `nickname`) 
+        VALUES (
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?
+        )";
+        $stmt = mysqli_prepare($connection, $query);
+        mysqli_stmt_bind_param($stmt, 'sssssssssisss', $name, $patronymic, $surname,  $email, $login, $password, $tel, $gender, $dateOfBirth, $active, $lastAuthDate, $registerDate, $nickname);
 
-        if ($arAnswer['status']) {
-            // Добавляю нового пользователя в базу данных
-            $query = "INSERT INTO `users`  
-            (`name`, `patronymic`, `surname`, `email`, `login`, `password`, `tel`, `gender`, `date_of_birth`, `active`, `last_auth_date`, `register_date`, `nickname`) 
-            VALUES (
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?
-            )";
-            $stmt = mysqli_prepare($connection, $query);
-            mysqli_stmt_bind_param($stmt, 'sssssssssisss', $name, $patronymic, $surname,  $email, $login, $password, $tel, $gender, $dateOfBirth, $active, $lastAuthDate, $registerDate, $nickname);
+        $name = htmlspecialchars(trim($postMessageFromForm['name']));
+        $patronymic = htmlspecialchars(trim($postMessageFromForm['patronymic']));
+        $surname = htmlspecialchars(trim($postMessageFromForm['surname']));
+        $email = $postMessageFromForm['email'];
+        $login = htmlspecialchars(trim($postMessageFromForm['login']));
+        $password = $postMessageFromForm['password'];
+        $tel = trim($postMessageFromForm['tel']);
+        $gender = $postMessageFromForm['gender'];
+        $dateOfBirth = $postMessageFromForm['date_of_birth'];
+        $active = 1;
+        $lastAuthDate = date('Y-m-d H:i:s');
+        $registerDate = date('Y-m-d');
+        $nickname = htmlspecialchars(trim($postMessageFromForm['nickname']));
 
-            $name = htmlspecialchars(trim($postMessageFromForm['name']));
-            $patronymic = htmlspecialchars(trim($postMessageFromForm['patronymic']));
-            $surname = htmlspecialchars(trim($postMessageFromForm['surname']));
-            $email = $postMessageFromForm['email'];
-            $login = htmlspecialchars(trim($postMessageFromForm['login']));
-            $password = $postMessageFromForm['password'];
-            $tel = trim($postMessageFromForm['tel']);
-            $gender = $postMessageFromForm['gender'];
-            $dateOfBirth = $postMessageFromForm['date_of_birth'];
-            $active = 1;
-            $lastAuthDate = date('Y-m-d H:i:s');
-            $registerDate = date('Y-m-d');
-            $nickname = htmlspecialchars(trim($postMessageFromForm['nickname']));
+        mysqli_stmt_execute($stmt);
 
-            mysqli_stmt_execute($stmt);
+        $query = "SELECT `id` FROM `users` WHERE `login`=?";
+        $stmt = mysqli_prepare($connection, $query);
+        mysqli_stmt_bind_param($stmt, 's', $login);
+        mysqli_stmt_execute($stmt);
 
-            $query = "SELECT `id` FROM `users` WHERE `login`=?";
-            $stmt = mysqli_prepare($connection, $query);
-            mysqli_stmt_bind_param($stmt, 's', $login);
-            mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $data = mysqli_fetch_assoc($result);
+       
 
-            $result = mysqli_stmt_get_result($stmt);
-            $data = mysqli_fetch_assoc($result);
-           
+        //Записываю данные о пользователе в сессию.
+        $_SESSION['auth'] = true; 
+        $_SESSION['id'] = $data['id']; 
+        $_SESSION['login'] = $login;
+        $_SESSION['name'] =  $name;
+        $_SESSION['patronymic'] = $patronymic;
+        $_SESSION['surname'] = $surname;
+        $_SESSION['email'] = $email;
+        $_SESSION['tel'] = $tel;
+        $_SESSION['gender'] = $gender;
+        $_SESSION['date_of_birth'] = $dateOfBirth;
+        $_SESSION['active'] = $active;
+        $_SESSION['last_auth_date'] = $lastAuthDate;
+        $_SESSION['nickname'] = $nickname;
 
-            //Записываю данные о пользователе в сессию.
-            $_SESSION['auth'] = true; 
-            $_SESSION['id'] = $data['id']; 
-            $_SESSION['login'] = $login;
-            $_SESSION['name'] =  $name;
-            $_SESSION['patronymic'] = $patronymic;
-            $_SESSION['surname'] = $surname;
-            $_SESSION['email'] = $email;
-            $_SESSION['tel'] = $tel;
-            $_SESSION['gender'] = $gender;
-            $_SESSION['date_of_birth'] = $dateOfBirth;
-            $_SESSION['active'] = $active;
-            $_SESSION['last_auth_date'] = $lastAuthDate;
-            $_SESSION['nickname'] = $nickname;
-
-            $jsonToFront = json_encode($arAnswer);
-            echo $jsonToFront;
+        if ($data) {
+            return "Пользователь успешно добавлен";
         } else {
-            $jsonToFront = json_encode($arAnswer);
-            echo $jsonToFront;
+            return "Ошибка добавления пользователя";
         }
     }
 
@@ -478,35 +434,30 @@ class User
     public static function update(array $postMessageFromForm)
     { 
         global $connection;
-        $arAnswer = self::validation($postMessageFromForm, $connection);
+        global $arAnswer;
+        // делаю запрос к БД по id из $_POST запихиваю все в массив и далее сопоставляю элементы $_POST и массив из БД
+        $query = "SELECT * FROM `users` WHERE `id`=" . $_SESSION['id'];
+        $result = mysqli_query($connection, $query);
+        $data = mysqli_fetch_assoc($result); 
         
-        // написать запись данных в базу данных, а лучше проверять были ли изменения.
-        if ($arAnswer['status']) {
-            // делаю запрос к БД по id из $_POST запихиваю все в массив и далее сопоставляю элементы $_POST и массив из БД
-            $query = "SELECT * FROM `users` WHERE `id`=" . $_SESSION['id'];
-            $result = mysqli_query($connection, $query);
-            $data = mysqli_fetch_assoc($result); 
-            
-            foreach ($postMessageFromForm as $key => $value) {   
-                if (isset($data[$key])) {  
-                        if ($key === 'id') {
-                            continue;
-                        }
-                        if ($value === $data[$key]) {
-                            continue;
-                        }
-                        $query = "UPDATE `users` SET ".$key."=? WHERE `id`=" . $_SESSION['id'];
-                        $stmt = mysqli_prepare($connection, $query);  
-                        mysqli_stmt_bind_param($stmt, 's', $value);
-                        mysqli_stmt_execute($stmt);  
-                        $_SESSION[$key] = $value;
-                } 
-            }
-            $arAnswer["status"] = true;
-        }  
-        
-        $jsonToFront = json_encode($arAnswer);
-        return $jsonToFront; 
+        foreach ($postMessageFromForm as $key => $value) {   
+            if (isset($data[$key])) {  
+                    if ($key === 'id') {
+                        continue;
+                    }
+                    if ($value === $data[$key]) {
+                        continue;
+                    }
+                    $query = "UPDATE `users` SET ".$key."=? WHERE `id`=" . $_SESSION['id'];
+                    $stmt = mysqli_prepare($connection, $query);  
+                    mysqli_stmt_bind_param($stmt, 's', $value);
+                    mysqli_stmt_execute($stmt);  
+                    $_SESSION[$key] = $value;
+            } 
+        }
+        $arAnswer["status"] = true;
+        $arAnswer["message"] = 'Изменения успешно внесены';
+         return $arAnswer;
     }
 
     /**
@@ -519,13 +470,17 @@ class User
     public static function isContaints(string $fieldName, string $desiredValue)
     {
         global $connection;
+ 
         $val = htmlspecialchars($desiredValue);
+        
         $query = "SELECT * FROM `users` WHERE `" . $fieldName . "`=?";
+
         $stmt = mysqli_prepare($connection, $query);
         mysqli_stmt_bind_param($stmt, 's', $val);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         $data = mysqli_fetch_assoc($result);
+       
         if ($data) {
             return true;
         } else {

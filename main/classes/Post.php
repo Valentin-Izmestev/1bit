@@ -46,72 +46,52 @@ class Post
      * Статический метод add() добавляет новость в базу данных
      * аттрибуты:
      * - postMessageFromForm - массив с данными полей формы;
-     * - filesMessageFromForm - массив с данными файла; 
-     * возвращает json
+     * - filesMessageFromForm - массив с данными файла;  
      */
     public static function add(array $postMessageFromForm, array $filesMessageFromForm)
     {
         global $connection;
-        $arAnswer = [
-            "status" => false,
-            "data" => [ 
-            ],
-            "message" => ""  
-        ];
+        global $arAnswer; 
         
-        if ($postMessageFromForm['title']) { 
-
-            if ($filesMessageFromForm['preview_img']['name']) { 
-                $arAnswer["message"] = 'файл добавлен в хранилище';
-                move_uploaded_file($filesMessageFromForm['preview_img']['tmp_name'], './upload/' . $filesMessageFromForm['preview_img']['name']);
-            }  
-             
-            
-            
-            $title = htmlspecialchars(trim($postMessageFromForm['title']));  
-            $fileAddres = "";
-            if($filesMessageFromForm['preview_img']['name'] && !empty($filesMessageFromForm['preview_img']['name']))
-            {
-                $fileAddres = '/upload/' . $filesMessageFromForm['preview_img']['name'];
-            }
-            $preview = htmlspecialchars(trim($postMessageFromForm['preview']));   
-            $createDate = date('Y-m-d H:i:s' ); 
-            $author_id = (int) $_SESSION['id'];
-
-            
-            $query = "INSERT INTO `posts` (`title`, `preview_img`, `create_date`, `preview`, `content`, `author_id`) VALUES ( ?,?, ?, ?, ?, ? )";
-
-            $stmt = mysqli_prepare($connection, $query);
-
-            mysqli_stmt_bind_param($stmt, 'sssssd', $title, $fileAddres, $createDate, $preview, $postMessageFromForm['content'], $author_id);
-            
-            mysqli_stmt_execute($stmt); 
-
-            $arAnswer["status"] = true;
-            $arAnswer["data"]["title"]["error"] = false;
-            $arAnswer["data"]["title"]["error_message"] = 'Ошибки нет'; 
-            $arAnswer["message"] = "Стаья успешно добавлена";
-
-        } else {
-            $arAnswer["status"] = false;
-            $arAnswer["data"]["title"]["error"] = false;
-            $arAnswer["data"]["title"]["error_message"] = 'Поле Заголовок не заполнено'; 
+        if ($filesMessageFromForm['preview_img']['name']) {  
+            move_uploaded_file($filesMessageFromForm['preview_img']['tmp_name'], './upload/' . $filesMessageFromForm['preview_img']['name']);
+        }  
+        
+        $title = htmlspecialchars(trim($postMessageFromForm['title']));  
+        $fileAddres = "";
+        if($filesMessageFromForm['preview_img']['name'] && !empty($filesMessageFromForm['preview_img']['name']))
+        {
+            $fileAddres = '/upload/' . $filesMessageFromForm['preview_img']['name'];
         }
+        $preview = htmlspecialchars(trim($postMessageFromForm['preview']));   
+        $createDate = date('Y-m-d H:i:s' ); 
+        $author_id = (int) $_SESSION['id'];
 
+        
+        $query = "INSERT INTO `posts` (`title`, `preview_img`, `create_date`, `preview`, `content`, `author_id`) VALUES ( ?,?, ?, ?, ?, ? )";
+
+        $stmt = mysqli_prepare($connection, $query);
+
+        mysqli_stmt_bind_param($stmt, 'sssssd', $title, $fileAddres, $createDate, $preview, $postMessageFromForm['content'], $author_id);
+        
+        mysqli_stmt_execute($stmt); 
+
+        $arAnswer["status"] = true;
+        $arAnswer["data"]["title"]["error"] = false;
+        $arAnswer["data"]["title"]["error_message"] = 'Ошибки нет'; 
+        $arAnswer["message"] = "Стаья успешно добавлена";
  
-        $jsonToFront  = json_encode($arAnswer);
-        return $jsonToFront;
+        return $arAnswer;
     }
-
+/**
+     * Статический метод delete() удаляет статью из БД и изображение из файловой системы
+     * аттрибуты:
+     * - $postId - число с id удаляемой статьи; 
+     */
     public static function delete(int $postId)
     {
         global $connection;
-        
-        $arAnswer = [
-            "status" => false,
-            "data" => [],
-            "message" => ""
-        ];
+        global $arAnswer; 
 
         $query = "SELECT * FROM `posts` WHERE `id` = ?";
         $stmt = mysqli_prepare($connection, $query);
@@ -147,10 +127,18 @@ class Post
                 $arAnswer["message"] = "Ошибка удаления статьи";
             } 
         } 
-
-        $messageToFront = json_encode($arAnswer);
-        return $messageToFront;
+ 
+        return $arAnswer;
     }
+
+    /**
+     * Статический update add() обнавляет данные статьи
+     * аттрибуты:
+     * - postMessageFromForm - массив с данными полей формы;
+     * - filesMessageFromForm - массив с данными файла;  
+     * - $postId - число с id обновляемой статьи.
+     * 
+     */
     public static function update(array $postMessageFromForm, array $filesMessageFromForm, int $postId)
     { 
         global $connection;
@@ -188,7 +176,10 @@ class Post
                 mysqli_stmt_bind_param($stmt, 'sssssd', $title, $fileAddres, $createDate, $preview, $postMessageFromForm['content'], $postId);
                 mysqli_stmt_execute($stmt);
                 $_SESSION['current_post_id'] = '';
-                return true;
+                
+                $arAnswer["status"] = true;
+                $arAnswer["message"] = "Статья успешно изменена";
+                return $arAnswer;
             }
             else
             {
@@ -215,7 +206,10 @@ class Post
                 mysqli_stmt_bind_param($stmt, 'sssssd', $title, $fileAddres, $createDate, $preview, $postMessageFromForm['content'], $postId);
                 mysqli_stmt_execute($stmt); 
                 $_SESSION['current_post_id'] = '';
-                return true;
+
+                $arAnswer["status"] = true;
+                $arAnswer["message"] = "Статья успешно изменена";
+                return $arAnswer;
             }
 
         }
@@ -237,7 +231,10 @@ class Post
             mysqli_stmt_bind_param($stmt, 'ssssd', $title, $createDate, $preview, $postMessageFromForm['content'], $postId);
             mysqli_stmt_execute($stmt);
             $_SESSION['current_post_id'] = '';
-            return true;
+            
+            $arAnswer["status"] = true;
+            $arAnswer["message"] = "Статья успешно изменена";
+            return $arAnswer;
         } 
         
     }
